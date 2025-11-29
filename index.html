@@ -1,210 +1,221 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memorama prueba 1</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding-top: 20px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memorama "Las Bromelias"</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* centra horizontalmente */
+        justify-content: flex-start;
+        background-color: #f0f0f0;
+        margin: 0;
+        padding-top: 20px;
+    }
 
-        h1 { color: #333; }
-        .score-board { margin-bottom: 20px; font-size: 1.2em; font-weight: bold; }
+    h1 {
+        color: #333;
+        text-align: center; /* centra el texto */
+        margin-bottom: 10px;
+    }
 
-        /* TABLERO RESPONSIVO */
-        .memory-game {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(4, 1fr);
-            gap: 5px;
-            width: 90vw;
-            max-width: 400px;
-            aspect-ratio: 1 / 1;
-            perspective: 1000px;
-            margin: 0 auto;
-        }
+    .score-board {
+        margin-bottom: 20px;
+        font-size: 1.2em;
+        font-weight: bold;
+        text-align: center;
+    }
 
-        .card {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform .5s;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
+    /* TABLERO RESPONSIVO */
+    .memory-game {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+        gap: 5px;
+        width: 90vw;
+        max-width: 600px; /* ahora más grande para pantallas grandes */
+        aspect-ratio: 1 / 1;
+        perspective: 1000px;
+        margin: 0 auto; /* centra el tablero horizontalmente */
+    }
 
-        .card.flip { transform: rotateY(180deg); }
+    .card {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform .5s;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
 
-        .card-face {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            border-radius: 8px;
-            backface-visibility: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
+    .card.flip { transform: rotateY(180deg); }
 
-        .card-back img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 8px;
-        }
+    .card-face {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        border-radius: 8px;
+        backface-visibility: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
 
-        .card-front {
-            background-color: #4CAF50;
-            color: white;
-            border: 2px solid #388E3C;
-            font-size: 2em;
-            font-weight: bold;
-        }
+    .card-back img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+    }
 
-        .card-back {
-            background-color: white;
-            transform: rotateY(180deg);
-            border: 2px solid #ddd;
-        }
+    .card-front {
+        background-color: #4CAF50;
+        color: white;
+        border: 2px solid #388E3C;
+        font-size: 2em;
+        font-weight: bold;
+    }
 
-        .card.match .card-front, .card.match .card-back {
-            background-color: #FFD700;
-            border-color: #FFA000;
-        }
+    .card-back {
+        background-color: white;
+        transform: rotateY(180deg);
+        border: 2px solid #ddd;
+    }
 
-        .reset-button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 1em;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
+    .card.match .card-front, .card.match .card-back {
+        background-color: #FFD700;
+        border-color: #FFA000;
+    }
 
-        .reset-button:hover { background-color: #0056b3; }
+    .reset-button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 1em;
+        cursor: pointer;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
 
-        /* MEDIA QUERIES PARA PANTALLAS MUY PEQUEÑAS */
-        @media (max-width: 400px) {
-            .card-front { font-size: 1.5em; }
-            .memory-game { gap: 4px; }
-        }
-    </style>
+    .reset-button:hover { background-color: #0056b3; }
+
+    /* MEDIA QUERIES PARA PANTALLAS MUY PEQUEÑAS */
+    @media (max-width: 400px) {
+        .card-front { font-size: 1.5em; }
+        .memory-game { gap: 4px; }
+    }
+</style>
 </head>
 
 <body>
-    <h1>Memorama "Las Bromelias"</h1>
-    <div class="score-board">Intentos: <span id="attempts">0</span></div>
-    <div class="memory-game" id="game-board"></div>
-    <button class="reset-button" onclick="startGame()">Reiniciar Juego</button>
+<h1>Memorama "Las Bromelias"</h1>
+<div class="score-board">Intentos: <span id="attempts">0</span></div>
+<div class="memory-game" id="game-board"></div>
+<button class="reset-button" onclick="startGame()">Reiniciar Juego</button>
 
-    <script>
-        const cardImagePaths = [
-            'Memoramabromelia_1.png', 
-            'Memoramabromelia_2.png', 
-            'Memoramabromelia_3.png', 
-            'Memoramabromelia_4.png', 
-            'Memoramabromelia_5.png', 
-            'Memoramabromelia_6.png', 
-            'Memoramabromelia_7.png', 
-            'Memoramabromelia_8.png'
-        ];
-        
-        let gameCards = [];
-        let flippedCards = [];
-        let lockBoard = false;
-        let matchesFound = 0;
-        let attempts = 0;
+<script>
+const cardImagePaths = [
+    'Memoramabromelia_1.png', 
+    'Memoramabromelia_2.png', 
+    'Memoramabromelia_3.png', 
+    'Memoramabromelia_4.png', 
+    'Memoramabromelia_5.png', 
+    'Memoramabromelia_6.png', 
+    'Memoramabromelia_7.png', 
+    'Memoramabromelia_8.png'
+];
 
-        const gameBoard = document.getElementById('game-board');
-        const attemptsDisplay = document.getElementById('attempts');
+let gameCards = [];
+let flippedCards = [];
+let lockBoard = false;
+let matchesFound = 0;
+let attempts = 0;
 
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
+const gameBoard = document.getElementById('game-board');
+const attemptsDisplay = document.getElementById('attempts');
 
-        function startGame() {
-            matchesFound = 0;
-            attempts = 0;
-            attemptsDisplay.textContent = attempts;
-            lockBoard = false;
-            flippedCards = [];
-            gameBoard.innerHTML = '';
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
 
-            gameCards = shuffle([...cardImagePaths, ...cardImagePaths]);
+function startGame() {
+    matchesFound = 0;
+    attempts = 0;
+    attemptsDisplay.textContent = attempts;
+    lockBoard = false;
+    flippedCards = [];
+    gameBoard.innerHTML = '';
 
-            gameCards.forEach((path, index) => {
-                const cardElement = document.createElement('div');
-                cardElement.classList.add('card');
-                cardElement.dataset.value = path;
-                cardElement.dataset.index = index;
+    gameCards = shuffle([...cardImagePaths, ...cardImagePaths]);
 
-                cardElement.innerHTML = `
-                    <div class="card-face card-front">?</div>
-                    <div class="card-face card-back"><img src="${path}" alt="Carta ${index}"></div>
-                `;
+    gameCards.forEach((path, index) => {
+        const cardElement = document.createElement('div');
+        cardElement.classList.add('card');
+        cardElement.dataset.value = path;
+        cardElement.dataset.index = index;
 
-                cardElement.addEventListener('click', flipCard);
-                gameBoard.appendChild(cardElement);
-            });
-        }
+        cardElement.innerHTML = `
+            <div class="card-face card-front">?</div>
+            <div class="card-face card-back"><img src="${path}" alt="Carta ${index}"></div>
+        `;
 
-        function flipCard() {
-            if (lockBoard || this.classList.contains('flip') || flippedCards.includes(this)) return;
-            this.classList.add('flip');
-            flippedCards.push(this);
-            if (flippedCards.length === 2) {
-                attempts++;
-                attemptsDisplay.textContent = attempts;
-                lockBoard = true;
-                checkForMatch();
-            }
-        }
+        cardElement.addEventListener('click', flipCard);
+        gameBoard.appendChild(cardElement);
+    });
+}
 
-        function checkForMatch() {
-            const [card1, card2] = flippedCards;
-            const isMatch = card1.dataset.value === card2.dataset.value;
-            isMatch ? disableCards() : unflipCards();
-        }
+function flipCard() {
+    if (lockBoard || this.classList.contains('flip') || flippedCards.includes(this)) return;
+    this.classList.add('flip');
+    flippedCards.push(this);
+    if (flippedCards.length === 2) {
+        attempts++;
+        attemptsDisplay.textContent = attempts;
+        lockBoard = true;
+        checkForMatch();
+    }
+}
 
-        function disableCards() {
-            const [card1, card2] = flippedCards;
-            card1.classList.add('match');
-            card2.classList.add('match');
-            card1.removeEventListener('click', flipCard);
-            card2.removeEventListener('click', flipCard);
-            matchesFound++;
-            resetBoard();
-            if (matchesFound === cardImagePaths.length) {
-                setTimeout(() => alert(`¡Felicidades! Has completado el juego en ${attempts} intentos.`), 500);
-            }
-        }
+function checkForMatch() {
+    const [card1, card2] = flippedCards;
+    const isMatch = card1.dataset.value === card2.dataset.value;
+    isMatch ? disableCards() : unflipCards();
+}
 
-        function unflipCards() {
-            setTimeout(() => {
-                flippedCards.forEach(card => card.classList.remove('flip'));
-                resetBoard();
-            }, 1000);
-        }
+function disableCards() {
+    const [card1, card2] = flippedCards;
+    card1.classList.add('match');
+    card2.classList.add('match');
+    card1.removeEventListener('click', flipCard);
+    card2.removeEventListener('click', flipCard);
+    matchesFound++;
+    resetBoard();
+    if (matchesFound === cardImagePaths.length) {
+        setTimeout(() => alert(`¡Felicidades! Has completado el juego en ${attempts} intentos.`), 500);
+    }
+}
 
-        function resetBoard() { [flippedCards, lockBoard] = [[], false]; }
+function unflipCards() {
+    setTimeout(() => {
+        flippedCards.forEach(card => card.classList.remove('flip'));
+        resetBoard();
+    }, 1000);
+}
 
-        document.addEventListener('DOMContentLoaded', startGame);
-    </script>
+function resetBoard() { [flippedCards, lockBoard] = [[], false]; }
+
+document.addEventListener('DOMContentLoaded', startGame);
+</script>
 </body>
 </html>
