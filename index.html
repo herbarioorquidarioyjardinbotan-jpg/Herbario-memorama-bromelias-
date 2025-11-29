@@ -14,64 +14,73 @@
             margin: 0;
             padding-top: 20px;
         }
-        /* ... Estilos generales (los mismos) ... */
+
         h1 { color: #333; }
         .score-board { margin-bottom: 20px; font-size: 1.2em; font-weight: bold; }
+
+        /* TABLERO RESPONSIVO */
         .memory-game {
             display: grid;
-            grid-template-columns: repeat(4, 100px); 
-            grid-template-rows: repeat(4, 100px); 
-            gap: 10px;
-            perspective: 1000px; 
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 5px;
+            width: 90vw;
+            max-width: 400px;
+            aspect-ratio: 1 / 1;
+            perspective: 1000px;
+            margin: 0 auto;
         }
+
         .card {
             width: 100%;
             height: 100%;
             position: relative;
             transform-style: preserve-3d;
-            transition: transform .5s; 
+            transition: transform .5s;
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        .card.flip {
-            transform: rotateY(180deg);
-        }
+
+        .card.flip { transform: rotateY(180deg); }
+
         .card-face {
             width: 100%;
             height: 100%;
             position: absolute;
             border-radius: 8px;
-            backface-visibility: hidden; 
+            backface-visibility: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden; /* Para que la imagen no se salga del borde */
+            overflow: hidden;
         }
-        
-        /* ESTILO PARA LAS IMÁGENES */
+
         .card-back img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Asegura que la imagen cubra todo el espacio sin distorsión */
+            object-fit: cover;
             border-radius: 8px;
         }
 
         .card-front {
-            background-color: #4CAF50; 
+            background-color: #4CAF50;
             color: white;
             border: 2px solid #388E3C;
             font-size: 2em;
             font-weight: bold;
         }
+
         .card-back {
-            background-color: white; 
-            transform: rotateY(180deg); 
+            background-color: white;
+            transform: rotateY(180deg);
             border: 2px solid #ddd;
         }
+
         .card.match .card-front, .card.match .card-back {
-            background-color: #FFD700; 
+            background-color: #FFD700;
             border-color: #FFA000;
         }
+
         .reset-button {
             margin-top: 20px;
             padding: 10px 20px;
@@ -83,8 +92,13 @@
             border-radius: 5px;
             transition: background-color 0.3s;
         }
-        .reset-button:hover {
-            background-color: #0056b3;
+
+        .reset-button:hover { background-color: #0056b3; }
+
+        /* MEDIA QUERIES PARA PANTALLAS MUY PEQUEÑAS */
+        @media (max-width: 400px) {
+            .card-front { font-size: 1.5em; }
+            .memory-game { gap: 4px; }
         }
     </style>
 </head>
@@ -92,15 +106,10 @@
 <body>
     <h1>Memorama "Las Bromelias"</h1>
     <div class="score-board">Intentos: <span id="attempts">0</span></div>
-    <div class="memory-game" id="game-board">
-        </div>
+    <div class="memory-game" id="game-board"></div>
     <button class="reset-button" onclick="startGame()">Reiniciar Juego</button>
 
     <script>
-        // *****************************************************************
-        // PONER LAS RUTAS A ARCHIVOS DE IMAGEN
-        // Debe haber un número PAR de imágenes (e.g., 8 imágenes diferentes)
-        // *****************************************************************
         const cardImagePaths = [
             'Memoramabromelia_1.png', 
             'Memoramabromelia_2.png', 
@@ -110,12 +119,11 @@
             'Memoramabromelia_6.png', 
             'Memoramabromelia_7.png', 
             'Memoramabromelia_8.png'
-            // Si quieres más cartas, ¡agrega más rutas aquí!
         ];
         
         let gameCards = [];
-        let flippedCards = []; 
-        let lockBoard = false; 
+        let flippedCards = [];
+        let lockBoard = false;
         let matchesFound = 0;
         let attempts = 0;
 
@@ -131,23 +139,19 @@
         }
 
         function startGame() {
-            // Reinicia variables
             matchesFound = 0;
             attempts = 0;
             attemptsDisplay.textContent = attempts;
             lockBoard = false;
             flippedCards = [];
-            gameBoard.innerHTML = ''; 
+            gameBoard.innerHTML = '';
 
-            // Usa cardImagePaths para crear pares
             gameCards = shuffle([...cardImagePaths, ...cardImagePaths]);
 
-            // Dibuja las cartas en el tablero
             gameCards.forEach((path, index) => {
                 const cardElement = document.createElement('div');
                 cardElement.classList.add('card');
-                // Almacenamos la ruta de la imagen como el valor de la carta
-                cardElement.dataset.value = path; 
+                cardElement.dataset.value = path;
                 cardElement.dataset.index = index;
 
                 cardElement.innerHTML = `
@@ -160,19 +164,14 @@
             });
         }
 
-        // Resto de la lógica (flipCard, checkForMatch, disableCards, unflipCards, resetBoard) es la misma.
         function flipCard() {
-            if (lockBoard || this.classList.contains('flip') || flippedCards.includes(this)) {
-                return;
-            }
-
+            if (lockBoard || this.classList.contains('flip') || flippedCards.includes(this)) return;
             this.classList.add('flip');
             flippedCards.push(this);
-
             if (flippedCards.length === 2) {
                 attempts++;
                 attemptsDisplay.textContent = attempts;
-                lockBoard = true; 
+                lockBoard = true;
                 checkForMatch();
             }
         }
@@ -180,27 +179,19 @@
         function checkForMatch() {
             const [card1, card2] = flippedCards;
             const isMatch = card1.dataset.value === card2.dataset.value;
-
             isMatch ? disableCards() : unflipCards();
         }
 
         function disableCards() {
             const [card1, card2] = flippedCards;
-
             card1.classList.add('match');
             card2.classList.add('match');
-
             card1.removeEventListener('click', flipCard);
             card2.removeEventListener('click', flipCard);
-
             matchesFound++;
-
             resetBoard();
-
             if (matchesFound === cardImagePaths.length) {
-                setTimeout(() => {
-                    alert(`¡Felicidades! Has completado el juego en ${attempts} intentos.`);
-                }, 500);
+                setTimeout(() => alert(`¡Felicidades! Has completado el juego en ${attempts} intentos.`), 500);
             }
         }
 
@@ -208,12 +199,10 @@
             setTimeout(() => {
                 flippedCards.forEach(card => card.classList.remove('flip'));
                 resetBoard();
-            }, 1000); 
+            }, 1000);
         }
 
-        function resetBoard() {
-            [flippedCards, lockBoard] = [[], false];
-        }
+        function resetBoard() { [flippedCards, lockBoard] = [[], false]; }
 
         document.addEventListener('DOMContentLoaded', startGame);
     </script>
