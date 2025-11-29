@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorama prueba 1</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding-top: 20px;
+        }
+        /* ... Estilos generales (los mismos) ... */
+        h1 { color: #333; }
+        .score-board { margin-bottom: 20px; font-size: 1.2em; font-weight: bold; }
+        .memory-game {
+            display: grid;
+            grid-template-columns: repeat(4, 100px); 
+            grid-template-rows: repeat(4, 100px); 
+            gap: 10px;
+            perspective: 1000px; 
+        }
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform .5s; 
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .card.flip {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            border-radius: 8px;
+            backface-visibility: hidden; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Para que la imagen no se salga del borde */
+        }
+        
+        /* ESTILO PARA LAS IMÁGENES */
+        .card-back img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Asegura que la imagen cubra todo el espacio sin distorsión */
+            border-radius: 8px;
+        }
+
+        .card-front {
+            background-color: #4CAF50; 
+            color: white;
+            border: 2px solid #388E3C;
+            font-size: 2em;
+            font-weight: bold;
+        }
+        .card-back {
+            background-color: white; 
+            transform: rotateY(180deg); 
+            border: 2px solid #ddd;
+        }
+        .card.match .card-front, .card.match .card-back {
+            background-color: #FFD700; 
+            border-color: #FFA000;
+        }
+        .reset-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .reset-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Juego de Memorama prueba 1</h1>
+    <div class="score-board">Intentos: <span id="attempts">0</span></div>
+    <div class="memory-game" id="game-board">
+        </div>
+    <button class="reset-button" onclick="startGame()">Reiniciar Juego</button>
+
+    <script>
+        // *****************************************************************
+        // PONER LAS RUTAS A ARCHIVOS DE IMAGEN
+        // Debe haber un número PAR de imágenes (e.g., 8 imágenes diferentes)
+        // *****************************************************************
+        const cardImagePaths = [
+            'Memoramabromelias/Memoramabromelia_1.png', 
+            'Memoramabromelias/Memoramabromelia_2.png', 
+            'Memoramabromelias/Memoramabromelia_3.png', 
+            'Memoramabromelias/Memoramabromelia_4.png', 
+            'Memoramabromelias/Memoramabromelia_5.png', 
+            'Memoramabromelias/Memoramabromelia_6.png', 
+            'Memoramabromelias/Memoramabromelia_7.png', 
+            'Memoramabromelias/Memoramabromelia_8.png'
+            // Si quieres más cartas, ¡agrega más rutas aquí!
+        ]; 
+        
+        let gameCards = [];
+        let flippedCards = []; 
+        let lockBoard = false; 
+        let matchesFound = 0;
+        let attempts = 0;
+
+        const gameBoard = document.getElementById('game-board');
+        const attemptsDisplay = document.getElementById('attempts');
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startGame() {
+            // Reinicia variables
+            matchesFound = 0;
+            attempts = 0;
+            attemptsDisplay.textContent = attempts;
+            lockBoard = false;
+            flippedCards = [];
+            gameBoard.innerHTML = ''; 
+
+            // Usa cardImagePaths para crear pares
+            gameCards = shuffle([...cardImagePaths, ...cardImagePaths]);
+
+            // Dibuja las cartas en el tablero
+            gameCards.forEach((path, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card');
+                // Almacenamos la ruta de la imagen como el valor de la carta
+                cardElement.dataset.value = path; 
+                cardElement.dataset.index = index;
+
+                cardElement.innerHTML = `
+                    <div class="card-face card-front">?</div>
+                    <div class="card-face card-back"><img src="${path}" alt="Carta ${index}"></div>
+                `;
+
+                cardElement.addEventListener('click', flipCard);
+                gameBoard.appendChild(cardElement);
+            });
+        }
+
+        // Resto de la lógica (flipCard, checkForMatch, disableCards, unflipCards, resetBoard) es la misma.
+        function flipCard() {
+            if (lockBoard || this.classList.contains('flip') || flippedCards.includes(this)) {
+                return;
+            }
+
+            this.classList.add('flip');
+            flippedCards.push(this);
+
+            if (flippedCards.length === 2) {
+                attempts++;
+                attemptsDisplay.textContent = attempts;
+                lockBoard = true; 
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            const [card1, card2] = flippedCards;
+            const isMatch = card1.dataset.value === card2.dataset.value;
+
+            isMatch ? disableCards() : unflipCards();
+        }
+
+        function disableCards() {
+            const [card1, card2] = flippedCards;
+
+            card1.classList.add('match');
+            card2.classList.add('match');
+
+            card1.removeEventListener('click', flipCard);
+            card2.removeEventListener('click', flipCard);
+
+            matchesFound++;
+
+            resetBoard();
+
+            if (matchesFound === cardImagePaths.length) {
+                setTimeout(() => {
+                    alert(`¡Felicidades! Has completado el juego en ${attempts} intentos.`);
+                }, 500);
+            }
+        }
+
+        function unflipCards() {
+            setTimeout(() => {
+                flippedCards.forEach(card => card.classList.remove('flip'));
+                resetBoard();
+            }, 1000); 
+        }
+
+        function resetBoard() {
+            [flippedCards, lockBoard] = [[], false];
+        }
+
+        document.addEventListener('DOMContentLoaded', startGame);
+    </script>
+</body>
+</html>
